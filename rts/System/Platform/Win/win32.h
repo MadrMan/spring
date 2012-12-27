@@ -24,11 +24,7 @@
 		#undef DeleteFile
 		#undef SendMessage
 		#undef GetCharWidth
-		#undef far
-		#undef near
-		#undef FAR
-		#undef NEAR
-
+		
 		// std min&max are used instead of the macros
 		#ifdef min
 			#undef min
