@@ -13,6 +13,7 @@
 #include <sstream>
 #include <string>
 #include <typeinfo>
+#include <list>
 #include "Lua/LuaParser.h"
 #include "System/float3.h"
 #include "System/Util.h"

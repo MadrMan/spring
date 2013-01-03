@@ -24,6 +24,7 @@
 		#undef DeleteFile
 		#undef SendMessage
 		#undef GetCharWidth
+		#undef GetTempPath
 		
 		// std min&max are used instead of the macros
 		#ifdef min

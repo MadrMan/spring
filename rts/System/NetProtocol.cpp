@@ -11,6 +11,7 @@
 // Boost hash_float.hpp ("call of overloaded ‘ldexp(float&, int&)’ is ambiguous")
 #include "System/Net/LocalConnection.h"
 #include "System/NetProtocol.h"
+#include "System/Platform/Threading.h"
 
 #include "Game/GameData.h"
 #include "Game/GlobalUnsynced.h"

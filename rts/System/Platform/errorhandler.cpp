@@ -11,6 +11,7 @@
 #include <string>
 #include <sstream>
 #include <boost/bind.hpp>
+#include <boost/thread/thread.hpp>
 
 #include "Game/GameServer.h"
 #include "Game/GlobalUnsynced.h"
