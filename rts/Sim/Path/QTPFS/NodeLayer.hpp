@@ -6,6 +6,7 @@
 #include <vector>
 #include <list> // for QTPFS_STAGGERED_LAYER_UPDATES
 #include <boost/cstdint.hpp>
+#include <limits>
 
 #include "PathDefines.hpp"
 #include "PathRectangle.hpp"
@@ -15,6 +16,14 @@ struct MoveDef;
 namespace QTPFS {
 	struct PathRectangle;
 	struct INode;
+
+	// NOTE:
+	//   we need a fixed range that does not become wider / narrower
+	//   during terrain deformations (otherwise the bins would change
+	//   across ALL nodes)
+	static const unsigned int NUM_SPEEDMOD_BINS = 10;
+	static const float MIN_SPEEDMOD_VALUE = 0.0f;
+	static const float MAX_SPEEDMOD_VALUE = 2.0f;
 
 	#ifdef QTPFS_STAGGERED_LAYER_UPDATES
 	struct LayerUpdate {
@@ -87,14 +96,6 @@ namespace QTPFS {
 			memFootPrint += (nodeGrid.size() * sizeof(INode*));
 			return memFootPrint;
 		}
-
-		// NOTE:
-		//   we need a fixed range that does not become wider / narrower
-		//   during terrain deformations (otherwise the bins would change
-		//   across ALL nodes)
-		static const unsigned int NUM_SPEEDMOD_BINS = 10;
-		static const float MIN_SPEEDMOD_VALUE = 0.0f;
-		static const float MAX_SPEEDMOD_VALUE = 2.0f;
 
 	private:
 		std::vector<INode*> nodeGrid;
