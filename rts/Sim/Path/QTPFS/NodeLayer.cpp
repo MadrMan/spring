@@ -17,13 +17,13 @@ static NL::SpeedBinType GetSpeedModBin(float absSpeedMod, float relSpeedMod) {
 	// NOTE:
 	//     bins N and N+1 are reserved for modifiers <= min and >= max
 	//     respectively; blocked squares MUST be in their own category
-	const NL::SpeedBinType defBin = NL::NUM_SPEEDMOD_BINS * relSpeedMod;
-	const NL::SpeedBinType maxBin = NL::NUM_SPEEDMOD_BINS - 1;
+	const NL::SpeedBinType defBin = QTPFS::NUM_SPEEDMOD_BINS * relSpeedMod;
+	const NL::SpeedBinType maxBin = QTPFS::NUM_SPEEDMOD_BINS - 1;
 
 	NL::SpeedBinType speedModBin = Clamp(defBin, static_cast<NL::SpeedBinType>(0), maxBin);
 
-	if (absSpeedMod <= NL::MIN_SPEEDMOD_VALUE) { speedModBin = NL::NUM_SPEEDMOD_BINS + 0; }
-	if (absSpeedMod >= NL::MAX_SPEEDMOD_VALUE) { speedModBin = NL::NUM_SPEEDMOD_BINS + 1; }
+	if (absSpeedMod <= QTPFS::MIN_SPEEDMOD_VALUE) { speedModBin = QTPFS::NUM_SPEEDMOD_BINS + 0; }
+	if (absSpeedMod >= QTPFS::MAX_SPEEDMOD_VALUE) { speedModBin = QTPFS::NUM_SPEEDMOD_BINS + 1; }
 
 	return speedModBin;
 }
@@ -174,16 +174,16 @@ bool QTPFS::NodeLayer::Update(
 			const unsigned int blockBits = (luBlockBits == NULL)? CMoveMath::IsBlockedNoSpeedModCheck(*md, chmx, chmz, NULL): (*luBlockBits)[recIdx];
 
 			const float rawAbsSpeedMod = (luSpeedMods == NULL)? CMoveMath::GetPosSpeedMod(*md, chmx, chmz): (*luSpeedMods)[recIdx];
-			const float tmpAbsSpeedMod = Clamp(rawAbsSpeedMod, NL::MIN_SPEEDMOD_VALUE, NL::MAX_SPEEDMOD_VALUE);
+			const float tmpAbsSpeedMod = Clamp(rawAbsSpeedMod, QTPFS::MIN_SPEEDMOD_VALUE, QTPFS::MAX_SPEEDMOD_VALUE);
 			const float newAbsSpeedMod = ((blockBits & CMoveMath::BLOCK_STRUCTURE) == 0)? tmpAbsSpeedMod: 0.0f;
-			const float newRelSpeedMod = (newAbsSpeedMod - NL::MIN_SPEEDMOD_VALUE) / (NL::MAX_SPEEDMOD_VALUE - NL::MIN_SPEEDMOD_VALUE);
+			const float newRelSpeedMod = (newAbsSpeedMod - QTPFS::MIN_SPEEDMOD_VALUE) / (QTPFS::MAX_SPEEDMOD_VALUE - QTPFS::MIN_SPEEDMOD_VALUE);
 			const float curRelSpeedMod = curSpeedMods[sqrIdx] / float(MaxSpeedModTypeValue());
 
 			const SpeedBinType newSpeedModBin = GetSpeedModBin(newAbsSpeedMod, newRelSpeedMod);
 			const SpeedBinType curSpeedModBin = curSpeedBins[sqrIdx];
 
 			numNewBinSquares += int(newSpeedModBin != curSpeedModBin);
-			numClosedSquares += int(newSpeedModBin == NL::NUM_SPEEDMOD_BINS);
+			numClosedSquares += int(newSpeedModBin == QTPFS::NUM_SPEEDMOD_BINS);
 
 			// need to keep track of these for Tesselate
 			oldSpeedMods[sqrIdx] = curRelSpeedMod * float(MaxSpeedModTypeValue());
