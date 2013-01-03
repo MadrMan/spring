@@ -71,9 +71,9 @@ namespace std {
 	float3 fabs(float3 v)
 	{
 		return float3(
-			std::fabs(v.x),
-			std::fabs(v.y),
-			std::fabs(v.z)
+			math::fabs(v.x),
+			math::fabs(v.y),
+			math::fabs(v.z)
 		);
 	}
 };

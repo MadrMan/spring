@@ -153,7 +153,7 @@ void CVirtualArchive::WriteToFile()
 	zipClose(zip, NULL);
 }
 
-CVirtualFile::CVirtualFile(int fid, const std::string& name) : fid(fid), name(name)
+CVirtualFile::CVirtualFile(int fid, const std::string& name) : name(name), fid(fid)
 {
 
 }

@@ -1,7 +1,7 @@
 /* This file is part of the Spring engine (GPL v2 or later), see LICENSE.html */
 
 #include "MapGenerator.h"
-#include "FileSystem/FileHandler.h"
+#include "System/FileSystem/FileHandler.h"
 #include "System/Exceptions.h"
 #include "System/FileSystem/VFSHandler.h"
 #include "System/FileSystem/ArchiveScanner.h"

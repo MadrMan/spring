@@ -50,7 +50,7 @@ void QTPFS::NodeLayer::RegisterNode(INode* n) {
 }
 
 void QTPFS::NodeLayer::Init(unsigned int layerNum) {
-	assert((NL::NUM_SPEEDMOD_BINS + 1) <= MaxSpeedBinTypeValue());
+	assert((QTPFS::NUM_SPEEDMOD_BINS + 1) <= MaxSpeedBinTypeValue());
 
 	// pre-count the root
 	numLeafNodes = 1;
