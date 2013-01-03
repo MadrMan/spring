@@ -37,7 +37,7 @@ namespace QTPFS {
 		bool operator >= (const INode* n) const { return (fCost >= n->fCost); }
 
 		#ifdef QTPFS_VIRTUAL_NODE_FUNCTIONS
-		virtual void Serialize(std::fstream&, bool) = 0;
+		virtual void Serialize(std::fstream&, unsigned int*, bool) = 0;
 		virtual unsigned int GetNeighbors(const std::vector<INode*>&, std::vector<INode*>&) = 0;
 		virtual const std::vector<INode*>& GetNeighbors(const std::vector<INode*>& v) = 0;
 		virtual bool UpdateNeighborCache(const std::vector<INode*>& nodes) = 0;
@@ -63,6 +63,9 @@ namespace QTPFS {
 		virtual unsigned int xsize() const = 0;
 		virtual unsigned int zsize() const = 0;
 		virtual unsigned int area() const = 0;
+
+		virtual bool IsOpen() const = 0;
+		virtual bool IsClosed() const = 0;
 
 		virtual void SetMoveCost(float cost) = 0;
 		virtual float GetMoveCost() const = 0;
@@ -90,7 +93,7 @@ namespace QTPFS {
 		float fCost;
 		float gCost;
 		float hCost;
-		float mCost;
+		// float mCost;
 
 		#ifdef QTPFS_WEIGHTED_HEURISTIC_COST
 		unsigned int numPrevNodes;
@@ -129,7 +132,7 @@ namespace QTPFS {
 		void Delete();
 		void PreTesselate(NodeLayer& nl, const PathRectangle& r, PathRectangle& ur);
 		void Tesselate(NodeLayer& nl, const PathRectangle& r);
-		void Serialize(std::fstream& fStream, bool read);
+		void Serialize(std::fstream& fStream, unsigned int* streamSize, bool readMode);
 
 		bool IsLeaf() const;
 		bool CanSplit(bool forced) const;
@@ -143,22 +146,26 @@ namespace QTPFS {
 		bool UpdateNeighborCache(const std::vector<INode*>& nodes);
 
 		#ifdef QTPFS_CACHED_EDGE_TRANSITION_POINTS
-		const float3& GetNeighborEdgeTransitionPoint(unsigned int ngbIdx) const { return etp_cache[ngbIdx]; }
+		const float3& GetNeighborEdgeTransitionPoint(unsigned int ngbIdx) const { return netpoints[ngbIdx]; }
 		#endif
+
+		unsigned int xmin() const { return (_xminxmax  & 0xFFFF); }
+		unsigned int zmin() const { return (_zminzmax  & 0xFFFF); }
+		unsigned int xmax() const { return (_xminxmax >>     16); }
+		unsigned int zmax() const { return (_zminzmax >>     16); }
+		unsigned int xmid() const { return ((xmin() + xmax()) >> 1); }
+		unsigned int zmid() const { return ((zmin() + zmax()) >> 1); }
+		unsigned int xsize() const { return (xmax() - xmin()); }
+		unsigned int zsize() const { return (zmax() - zmin()); }
+		unsigned int depth() const { return _depth; }
+		unsigned int area() const { return (xsize() * zsize()); }
+
+		// true iff this node is fully open (partially open nodes have larger but non-infinite cost)
+		bool IsOpen() const { return (moveCostAvg < (QTPFS_CLOSED_NODE_COST / float(area()))); }
+		bool IsClosed() const { return (moveCostAvg == QTPFS_POSITIVE_INFINITY); }
 
 		void SetMoveCost(float cost) { moveCostAvg = cost; }
 		float GetMoveCost() const { return moveCostAvg; }
-
-		unsigned int xmin() const { return _xmin; }
-		unsigned int zmin() const { return _zmin; }
-		unsigned int xmax() const { return _xmax; }
-		unsigned int zmax() const { return _zmax; }
-		unsigned int xmid() const { return ((_xmin + _xmax) >> 1); }
-		unsigned int zmid() const { return ((_zmin + _zmax) >> 1); }
-		unsigned int xsize() const { return (_xmax - _xmin); }
-		unsigned int zsize() const { return (_zmax - _zmin); }
-		unsigned int depth() const { return _depth; }
-		unsigned int area() const { return (xsize() * zsize()); }
 
 		void SetSearchState(unsigned int state) { searchState = state; }
 		unsigned int GetSearchState() const { return searchState; }
@@ -182,9 +189,9 @@ namespace QTPFS {
 			bool& needSplit
 		);
 
-		unsigned int _xmin, _xmax;
-		unsigned int _zmin, _zmax;
 		unsigned int _depth;
+		unsigned int _xminxmax;
+		unsigned int _zminzmax;
 
 		float speedModSum;
 		float speedModAvg;
@@ -198,7 +205,7 @@ namespace QTPFS {
 		std::vector<INode*> neighbors;
 
 		#ifdef QTPFS_CACHED_EDGE_TRANSITION_POINTS
-		std::vector<float3> etp_cache;
+		std::vector<float3> netpoints;
 		#endif
 	};
 };
