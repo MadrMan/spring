@@ -248,7 +248,7 @@ void CMapGenerator::GenerateSMT(CVirtualArchive* archive)
 			tilePos += bpp;
 		}
 	}
-
+	glClearErrors();
 	GLuint tileTex;
 	glGenTextures(1, &tileTex);
 	glBindTexture(GL_TEXTURE_2D, tileTex);
