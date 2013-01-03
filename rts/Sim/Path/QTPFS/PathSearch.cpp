@@ -57,8 +57,6 @@ bool QTPFS::PathSearch::Execute(
 	if (haveFullPath)
 		return true;
 
-	const bool srcBlocked = (srcNode->GetMoveCost() == QTPFS_POSITIVE_INFINITY);
-
 	std::vector<INode*>& allNodes = nodeLayer->GetNodes();
 	std::vector<INode*> ngbNodes;
 
@@ -76,7 +74,7 @@ bool QTPFS::PathSearch::Execute(
 	// nodes can represent many terrain squares, some of which can still
 	// be passable and allow a unit to move within a node)
 	// NOTE: we need to make sure such paths do not have infinite cost!
-	if (srcBlocked) {
+	if (srcNode->GetMoveCost() == QTPFS_POSITIVE_INFINITY) {
 		srcNode->SetMoveCost(0.0f);
 	}
 
@@ -103,7 +101,7 @@ bool QTPFS::PathSearch::Execute(
 		}
 	}
 
-	if (srcBlocked) {
+	if (srcNode->GetMoveCost() == 0.0f) {
 		srcNode->SetMoveCost(QTPFS_POSITIVE_INFINITY);
 	}
 		
@@ -173,7 +171,7 @@ void QTPFS::PathSearch::Iterate(
 		return;
 	if (curNode != srcNode)
 		curPoint = curNode->GetNeighborEdgeTransitionPoint(curNode->GetPrevNode(), curPoint);
-	if (curNode->GetMoveCost() == QTPFS_POSITIVE_INFINITY)
+	if (curNode->IsClosed())
 		return;
 
 	if (curNode->xmid() < searchRect.x1) return;
@@ -191,13 +189,13 @@ void QTPFS::PathSearch::Iterate(
 	#ifdef QTPFS_WEIGHTED_HEURISTIC_COST
 	const float hWeight = math::sqrtf(curNode->GetPathCost(NODE_PATH_COST_M) / (curNode->GetNumPrevNodes() + 1));
 	#else
-	// the default speedmod on flat terrain (assuming no typemaps) is 1.0
-	// this value lies halfway between the minimum and the maximum of the
-	// speedmod range (2.0), so a node covering such terrain will receive
-	// a *relative* (average) speedmod of 0.5 --> the average move-cost of
-	// a "virtual node" containing nxtPoint and tgtPoint is the inverse of
-	// 0.5, making our "admissable" heuristic distance-weight 2.0 (1.0/0.5)
-	const float hWeight = 2.0f;
+	// be as optimistic as possible: assume the remainder of our path will
+	// cover only flat terrain with maximum speed-modifier between nxtPoint
+	// and tgtPoint
+	// this is admissable so long as the map is not LOCALLY changed in such
+	// a way as to increase the maximum speedmod beyond the current layer's
+	// cached maximum value
+	const float hWeight = 1.0f / nodeLayer->GetMaxRelSpeedMod();
 	#endif
 
 	#ifdef QTPFS_COPY_ITERATE_NEIGHBOR_NODES
@@ -242,7 +240,7 @@ void QTPFS::PathSearch::Iterate(
 		nxtPoint = curNode->GetNeighborEdgeTransitionPoint(nxtNode, curPoint);
 		#endif
 
-		if (nxtNode->GetMoveCost() == QTPFS_POSITIVE_INFINITY)
+		if (nxtNode->IsClosed())
 			continue;
 
 		const bool isCurrent = (nxtNode->GetSearchState() >= searchState);
