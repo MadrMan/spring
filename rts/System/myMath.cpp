@@ -101,8 +101,8 @@ float3 ClosestPointOnLine(const float3 l1, const float3 l2, const float3 p)
  * How does it works?
  * We calculate the two intersection points ON the
  * ray as multiple of `dir` starting from `start`.
- * So we get 2 scalars, whereupon `near` defines the
- * new startpoint and `far` defines the new endpoint.
+ * So we get 2 scalars, whereupon `vnear` defines the
+ * new startpoint and `vfar` defines the new endpoint.
  *
  * credits:
  * http://ompf.org/ray/ray_box.html
@@ -111,7 +111,7 @@ std::pair<float, float> GetMapBoundaryIntersectionPoints(const float3 start, con
 {
 	const float rcpdirx = (dir.x != 0.0f)? (1.0f / dir.x): 10000.0f;
 	const float rcpdirz = (dir.z != 0.0f)? (1.0f / dir.z): 10000.0f;
-	float l1, l2, far, near;
+	float l1, l2, vfar, vnear;
 
 	const float& mapwidth  = float3::maxxpos + 1;
 	const float& mapheight = float3::maxzpos + 1;
@@ -119,21 +119,21 @@ std::pair<float, float> GetMapBoundaryIntersectionPoints(const float3 start, con
 	//! x component
 	l1 = (    0.0f - start.x) * rcpdirx;
 	l2 = (mapwidth - start.x) * rcpdirx;
-	near = std::min(l1, l2);
-	far  = std::max(l1, l2);
+	vnear = std::min(l1, l2);
+	vfar  = std::max(l1, l2);
 
 	//! z component
 	l1 = (     0.0f - start.z) * rcpdirz;
 	l2 = (mapheight - start.z) * rcpdirz;
-	near = std::max(std::min(l1, l2), near);
-	far  = std::min(std::max(l1, l2), far);
+	vnear = std::max(std::min(l1, l2), vnear);
+	vfar  = std::min(std::max(l1, l2), vfar);
 
-	if (far < 0.0f || far < near) {
+	if (vfar < 0.0f || vfar < vnear) {
 		//! outside of boundary
-		near = -1.0f;
-		far = -1.0f;
+		vnear = -1.0f;
+		vfar = -1.0f;
 	}
-	return std::pair<float, float>(near, far);
+	return std::pair<float, float>(vnear, vfar);
 }
 
 
@@ -141,21 +141,21 @@ bool ClampLineInMap(float3& start, float3& end)
 {
 	const float3 dir = end - start;
 	const std::pair<float, float>& interp = GetMapBoundaryIntersectionPoints(start, dir);
-	const float& near = interp.first;
-	const float& far  = interp.second;
+	const float& vnear = interp.first;
+	const float& vfar  = interp.second;
 
-	if (far < 0.0f) {
+	if (vfar < 0.0f) {
 		//! outside of map!
 		start = float3(-1.0f, -1.0f, -1.0f);
 		end   = float3(-1.0f, -1.0f, -1.0f);
 		return true;
 	}
 
-	if (far < 1.0f || near > 0.0f) {
-		end   = start + dir * std::min(far, 1.0f);
-		start = start + dir * std::max(near, 0.0f);
+	if (vfar < 1.0f || vnear > 0.0f) {
+		end   = start + dir * std::min(vfar, 1.0f);
+		start = start + dir * std::max(vnear, 0.0f);
 
-		//! precision of near,far are limited, so better clamp it afterwards
+		//! precision of vnear,vfar are limited, so better clamp it afterwards
 		end.ClampInMap();
 		start.ClampInMap();
 		return true;
@@ -168,19 +168,19 @@ bool ClampRayInMap(const float3 start, float3& end)
 {
 	const float3 dir = end - start;
 	std::pair<float, float> interp = GetMapBoundaryIntersectionPoints(start, dir);
-	const float& near = interp.first;
-	const float& far  = interp.second;
+	const float& vnear = interp.first;
+	const float& vfar  = interp.second;
 
-	if (far < 0.0f) {
+	if (vfar < 0.0f) {
 		//! outside of map!
 		end = start;
 		return true;
 	}
 
-	if (far < 1.0f || near > 0.0f) {
-		end = start + dir * std::min(far, 1.0f);
+	if (vfar < 1.0f || vnear > 0.0f) {
+		end = start + dir * std::min(vfar, 1.0f);
 
-		//! precision of near,far are limited, so better clamp it afterwards
+		//! precision of vnear,vfar are limited, so better clamp it afterwards
 		end.ClampInMap();
 		return true;
 	}

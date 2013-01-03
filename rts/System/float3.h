@@ -9,7 +9,7 @@
 #include "lib/streflop/streflop_cond.h"
 #include "System/creg/creg_cond.h"
 #include "System/FastMath.h"
-#ifndef BUILDING_AI
+#if !defined(BUILDING_AI) && defined(__SUPPORT_SNAN__)
 #include "lib/gml/gml_base.h"
 #include "System/Platform/Threading.h"
 #endif
