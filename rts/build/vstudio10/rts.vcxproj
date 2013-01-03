@@ -568,6 +568,8 @@
     <ClInclude Include="..\..\lib\7z\Lzma2Dec.h" />
     <ClInclude Include="..\..\Lua\LuaContextData.h" />
     <ClInclude Include="..\..\Lua\LuaIntro.h" />
+    <ClInclude Include="..\..\Map\Generation\MapGenerator.h" />
+    <ClInclude Include="..\..\Map\Generation\SimpleMapGenerator.h" />
     <ClInclude Include="..\..\Rendering\AVIGenerator.h" />
     <ClInclude Include="..\..\Rendering\Colors.h" />
     <ClInclude Include="..\..\Rendering\DebugColVolDrawer.h" />
@@ -825,6 +827,7 @@
     <ClInclude Include="..\..\System\FileSystem\Archives\IArchive.h" />
     <ClInclude Include="..\..\System\FileSystem\Archives\PoolArchive.h" />
     <ClInclude Include="..\..\System\FileSystem\Archives\SevenZipArchive.h" />
+    <ClInclude Include="..\..\System\FileSystem\Archives\VirtualArchive.h" />
     <ClInclude Include="..\..\System\FileSystem\Archives\ZipArchive.h" />
     <ClInclude Include="..\..\System\FPUCheck.h" />
     <ClInclude Include="..\..\System\GlobalConfig.h" />
@@ -1640,6 +1643,8 @@
       </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\..\Lua\LuaIntro.cpp" />
+    <ClCompile Include="..\..\Map\Generation\MapGenerator.cpp" />
+    <ClCompile Include="..\..\Map\Generation\SimpleMapGenerator.cpp" />
     <ClCompile Include="..\..\Rendering\AVIGenerator.cpp" />
     <ClCompile Include="..\..\Rendering\CommandDrawer.cpp" />
     <ClCompile Include="..\..\Rendering\DebugColVolDrawer.cpp" />
@@ -2081,6 +2086,7 @@
     <ClCompile Include="..\..\System\FileSystem\Archives\IArchive.cpp" />
     <ClCompile Include="..\..\System\FileSystem\Archives\PoolArchive.cpp" />
     <ClCompile Include="..\..\System\FileSystem\Archives\SevenZipArchive.cpp" />
+    <ClCompile Include="..\..\System\FileSystem\Archives\VirtualArchive.cpp" />
     <ClCompile Include="..\..\System\FileSystem\Archives\ZipArchive.cpp" />
     <ClCompile Include="..\..\System\float4.cpp" />
     <ClCompile Include="..\..\System\GlobalConfig.cpp" />
