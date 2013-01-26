@@ -3,7 +3,6 @@
 #ifndef _MAP_GENERATOR_H_
 #define _MAP_GENERATOR_H_
 
-#include "Game/GameSetup.h"
 #include "System/type2.h"
 #include "Map/SMF/SMFReadMap.h"
 
@@ -16,21 +15,32 @@ public:
 
 	void Generate();
 
-protected:
-	CMapGenerator(const CGameSetup* setup);
+	const std::string& GetMapName() const
+	{ return mapName; }
 
-	const CGameSetup* const setup;
+	unsigned int GetMapSeed() const
+	{ return mapSeed; }
+
+protected:
+	CMapGenerator(unsigned int mapSeed);
+
+	const unsigned int mapSeed;
 
 	std::vector<float>& GetHeightMap()
 	{ return heightMap; }
+
+	void SetMapName(const std::string& mapName)
+	{ this->mapName = mapName; }
 
 	virtual int2 GetGridSize() const
 	{ return int2(GetMapSize().x * CSMFReadMap::bigSquareSize, GetMapSize().y * CSMFReadMap::bigSquareSize); }
 
 private:
-	void GenerateSMF(CVirtualArchive* archive);
-	void GenerateMapInfo(CVirtualArchive* archive);
-	void GenerateSMT(CVirtualArchive* archive);
+	void GenerateSMF(CVirtualFile* fileSMF);
+	void GenerateMapInfo(CVirtualFile* fileMapInfo);
+	void GenerateSMT(CVirtualFile* fileSMT);
+
+	bool MissingFileHandler(CVirtualFile* file);
 
 	template<typename T>
 	void AppendToBuffer(CVirtualFile* file, const T& data)
@@ -50,7 +60,13 @@ private:
 
 	std::vector<float> heightMap;
 	std::vector<float> metalMap;
+	std::string mapName;
+	bool isGenerated;
 
+	CVirtualArchive* archive;
+	CVirtualFile* fileSMF;
+	CVirtualFile* fileMapInfo;
+	CVirtualFile* fileSMT;
 };
 
 #endif // _MAP_GENERATOR_H_

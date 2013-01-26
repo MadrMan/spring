@@ -8,7 +8,7 @@
 class CSimpleMapGenerator : public CMapGenerator
 {
 public:
-	CSimpleMapGenerator(const CGameSetup* setup);
+	CSimpleMapGenerator(unsigned int mapSeed);
 	virtual ~CSimpleMapGenerator();
 
 private:

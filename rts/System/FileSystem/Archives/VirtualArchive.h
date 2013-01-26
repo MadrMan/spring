@@ -7,6 +7,7 @@
 #include "IArchive.h"
 #include <vector>
 #include <string>
+#include <boost/function.hpp>
 
 class CVirtualArchive;
 
@@ -49,9 +50,16 @@ public:
 	int GetFID() const
 	{ return fid; }
 
+	bool IsLoaded() const
+	{ return loaded; }
+
+	void SetLoaded(bool loaded)
+	{ this->loaded = loaded; }
+
 private:
 	const std::string name;
 	int fid;
+	bool loaded;
 };
 
 /**
@@ -81,7 +89,6 @@ class CVirtualArchive
 {
 public:
 	CVirtualArchive(const std::string& fileName);
-	virtual ~CVirtualArchive();
 
 	CVirtualArchiveOpen* Open();
 	CVirtualFile* AddFile(const std::string& file);
@@ -98,8 +105,14 @@ public:
 
 	void WriteToFile();
 
+	void clear();
+
+	boost::function<bool(CVirtualFile*)> missingFileHandler;
+
 private:
 	friend class CVirtualArchiveOpen;
+	friend class CVirtualArchiveFactory;
+	virtual ~CVirtualArchive();
 
 	std::vector<CVirtualFile*> files;
 	std::string fileName;

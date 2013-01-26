@@ -63,6 +63,7 @@ CPreGame::CPreGame(boost::shared_ptr<ClientSetup> setup)
 	, savefile(NULL)
 	, timer(spring_gettime())
 	, wantDemo(true)
+	, mapGenerator(nullptr)
 {
 	assert(clientNet == NULL);
 
@@ -92,6 +93,7 @@ CPreGame::~CPreGame()
 	agui::gui->Draw();
 
 	pregame = NULL;
+	delete mapGenerator;
 }
 
 void CPreGame::LoadSetupscript(const std::string& script)
@@ -207,6 +209,10 @@ void CPreGame::StartServer(const std::string& setupscript)
 
 	startGameSetup->Init(setupscript);
 	startGameData->SetRandomSeed(static_cast<unsigned>(gu->RandInt()));
+
+	if (setup->mapSeed != 0) {
+		SetGeneratedMap(setup);
+	}
 
 	if (startGameSetup->mapName.empty()) {
 		throw content_error("No map selected in startscript");
@@ -444,6 +450,10 @@ void CPreGame::GameDataReceived(boost::shared_ptr<const netcode::RawPacket> pack
 
 	if (CGameSetup::LoadReceivedScript(gameData->GetSetupText(), clientSetup->isHost)) {
 		assert(gameSetup != NULL);
+		if(gameSetup->mapSeed != 0)
+		{
+			SetGeneratedMap(gameSetup);
+		}
 		gu->LoadFromSetup(gameSetup);
 		gs->LoadFromSetup(gameSetup);
 		// do we really need to do this so early?
@@ -497,3 +507,18 @@ void CPreGame::GameDataReceived(boost::shared_ptr<const netcode::RawPacket> pack
 	}
 }
 
+void CPreGame::SetGeneratedMap(CGameSetup* setup)
+{
+	if(mapGenerator)
+	{
+		if(setup->mapSeed != mapGenerator->GetMapSeed())
+		{
+			throw content_error("Existing MapGenerator seed does not match new seed");
+		}
+	} else {
+		mapGenerator = new CSimpleMapGenerator(setup->mapSeed);
+		mapGenerator->Generate();
+	}
+
+	setup->mapName = mapGenerator->GetMapName();
+}

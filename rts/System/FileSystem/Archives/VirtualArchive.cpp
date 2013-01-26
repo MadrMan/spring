@@ -18,7 +18,13 @@ CVirtualArchiveFactory::CVirtualArchiveFactory() : IArchiveFactory("sva")
 
 CVirtualArchiveFactory::~CVirtualArchiveFactory()
 {
-	virtualArchiveFactory = 0;
+	virtualArchiveFactory = NULL;
+
+	for(std::vector<CVirtualArchive*>::iterator it = archives.begin(); it != archives.end(); ++it)
+	{
+		CVirtualArchive* archive = *it;
+		delete archive;
+	}
 }
 
 CVirtualArchive* CVirtualArchiveFactory::AddArchive(const std::string& fileName)
@@ -86,7 +92,6 @@ CVirtualArchive::~CVirtualArchive()
 		delete *it;
 	}
 	files.clear();
-
 }
 
 CVirtualArchiveOpen* CVirtualArchive::Open()
@@ -104,6 +109,20 @@ bool CVirtualArchive::GetFile( unsigned int fid, std::vector<boost::uint8_t>& bu
 	if(fid >= files.size()) return false;
 
 	CVirtualFile* file = files[fid];
+	if(!file->IsLoaded())
+	{
+		// try to load the file if it isn't loaded yet
+		if(!missingFileHandler)
+			return false;
+
+		// call the handler to try and load the file
+		if(!missingFileHandler(file))
+			return false;
+
+		// if the handler returns true, the file should be loaded
+		assert(file->IsLoaded());
+	}
+
 	buffer = file->buffer;
 
 	return true;
@@ -153,7 +172,21 @@ void CVirtualArchive::WriteToFile()
 	zipClose(zip, NULL);
 }
 
-CVirtualFile::CVirtualFile(int fid, const std::string& name) : name(name), fid(fid)
+void CVirtualArchive::clear()
+{
+	//clear the content of the files and unload them (deleting the actual files breaks stuff)
+	for(std::vector<CVirtualFile*>::iterator it = files.begin(); it != files.end(); ++it)
+	{
+		CVirtualFile* file = *it;
+		file->SetLoaded(false);
+		
+		//a simple .clear() doesn't suffice as it doesn't always reset capacity
+		file->buffer.swap(std::vector<boost::uint8_t>());
+	}
+}
+
+CVirtualFile::CVirtualFile(int fid, const std::string& name) 
+	: name(name), fid(fid), loaded(false)
 {
 
 }

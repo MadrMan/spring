@@ -7,27 +7,43 @@
 #include "System/FileSystem/ArchiveScanner.h"
 #include "System/FileSystem/Archives/VirtualArchive.h"
 #include "Map/SMF/SMFFormat.h"
-#include "Game/LoadScreen.h"
 #include "Rendering/GL/myGL.h"
+#include "Game/LoadScreen.h"
 
 #include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 #include <fstream>
 
-CMapGenerator::CMapGenerator(const CGameSetup* setup) : setup(setup)
+CMapGenerator::CMapGenerator(unsigned int mapSeed)
+	: mapSeed(mapSeed), archive(NULL), fileSMF(NULL), fileSMT(NULL), fileMapInfo(NULL), isGenerated(false)
 {
 }
 
 CMapGenerator::~CMapGenerator()
 {
+	archive->missingFileHandler = 0;
+
+	//At this point we should assume the map won't be touched again to save memory
+	if(archive)
+	{
+		archive->clear();
+	}
 }
 
 void CMapGenerator::Generate()
 {
-	//loadscreen->SetLoadMessage("Generating map");
-
 	//Create archive for map
-	std::string mapArchivePath = setup->mapName + "." + virtualArchiveFactory->GetDefaultExtension();
-	CVirtualArchive* archive = virtualArchiveFactory->AddArchive(setup->mapName);
+	const std::string mapArchiveName = std::string("GenMap") + boost::lexical_cast<std::string>(mapSeed);
+	const std::string mapArchivePath = mapArchiveName + "." + virtualArchiveFactory->GetDefaultExtension();
+	archive = virtualArchiveFactory->AddArchive(mapArchiveName);
+
+	//Set handler to be called when a non-loaded file is requested
+	archive->missingFileHandler = std::bind1st(std::mem_fun(&CMapGenerator::MissingFileHandler), this);
+
+	//Add initital files for scanning
+	fileSMF = archive->AddFile("maps/generated.smf");
+	fileMapInfo = archive->AddFile("mapinfo.lua");
+	fileSMT = archive->AddFile("maps/generated.smt");
 
 	//Create arrays that can be filled by top class
 	int2 gridSize = GetGridSize();
@@ -35,17 +51,35 @@ void CMapGenerator::Generate()
 	heightMap.resize(dimensions);
 	metalMap.resize(dimensions);
 
-	//Generate map and fill archive files
-	GenerateMap();
-	GenerateSMF(archive);
-	GenerateMapInfo(archive);
-	GenerateSMT(archive);
-
-	//Add archive to vfs
+	//Add archive to vfs (will request mapinfo.lua)
 	archiveScanner->ScanArchive(mapArchivePath);
+}
 
-	//Write to disk for testing
-	//archive->WriteToFile();
+bool CMapGenerator::MissingFileHandler(CVirtualFile* file)
+{
+	//Generate map in generator, should be fast
+	if(!isGenerated)
+	{
+		isGenerated = true;
+		GenerateMap();
+	}
+
+	//This should usually be available
+	if(!fileMapInfo->IsLoaded())
+	{
+		GenerateMapInfo(fileMapInfo);
+	}
+
+	//Only load these when actually requested, they can take a while
+	if(file == fileSMF || file == fileSMT)
+	{
+		loadscreen->SetLoadMessage("Generating Map");
+
+		GenerateSMF(fileSMF);
+		GenerateSMT(fileSMT);
+	}
+
+	return true;
 }
 
 void CMapGenerator::AppendToBuffer(CVirtualFile* file, const void* data, int size)
@@ -58,12 +92,8 @@ void CMapGenerator::SetToBuffer(CVirtualFile* file, const void* data, int size, 
 	std::copy((boost::uint8_t*)data, (boost::uint8_t*)data + size, file->buffer.begin() + position);
 }
 
-void CMapGenerator::GenerateSMF(CVirtualArchive* archive)
+void CMapGenerator::GenerateSMF(CVirtualFile* fileSMF)
 {
-	CVirtualFile* fileSMF = archive->AddFile("maps/generated.smf");
-
-	//FileBuffer b;
-
 	SMFHeader smfHeader;
 	MapTileHeader smfTile;
 	MapFeatureHeader smfFeature;
@@ -71,7 +101,7 @@ void CMapGenerator::GenerateSMF(CVirtualArchive* archive)
 	//--- Make SMFHeader ---
 	strcpy(smfHeader.magic, "spring map file");
 	smfHeader.version = 1;
-	smfHeader.mapid = 0x524d4746 ^ (int)setup->mapSeed;
+	smfHeader.mapid = 0x524d4746 ^ mapSeed;
 
 	//Set settings
 	smfHeader.mapx = GetGridSize().x;
@@ -161,7 +191,6 @@ void CMapGenerator::GenerateSMF(CVirtualArchive* archive)
 	memset(metalmapPtr, 0, metalmapSize);
 
 	//--- Write to final buffer ---
-	//std::vector<boost::uint8_t>& smb = fileSMF->buffer;
 	AppendToBuffer(fileSMF, smfHeader);
 
 	AppendToBuffer(fileSMF, vegHeader);
@@ -184,15 +213,14 @@ void CMapGenerator::GenerateSMF(CVirtualArchive* archive)
 	delete[] metalmapPtr;
 	delete[] tilemapPtr;
 	delete[] vegmapPtr;
+
+	fileSMF->SetLoaded(true);
 }
 
-void CMapGenerator::GenerateMapInfo(CVirtualArchive* archive)
+void CMapGenerator::GenerateMapInfo(CVirtualFile* fileMapInfo)
 {
-
-	CVirtualFile* fileMapInfo = archive->AddFile("mapinfo.lua");
-
 	//Open template mapinfo.lua
-	const std::string luaTemplate = "mapgenerator/mapinfo_template.lua";
+	const static std::string luaTemplate = "mapgenerator/mapinfo_template.lua";
 	CFileHandler fh(luaTemplate, SPRING_VFS_PWD_ALL);
 	if(!fh.FileExists())
 	{
@@ -213,18 +241,17 @@ void CMapGenerator::GenerateMapInfo(CVirtualArchive* archive)
 	startPosString = ss.str();
 
 	//Replace tags in mapinfo.lua
-	boost::replace_first(luaInfo, "${NAME}", setup->mapName);
+	boost::replace_first(luaInfo, "${NAME}", mapName);
 	boost::replace_first(luaInfo, "${DESCRIPTION}", GetMapDescription());
 	boost::replace_first(luaInfo, "${START_POSITIONS}", startPosString);
 
 	//Copy to filebuffer
 	fileMapInfo->buffer.assign(luaInfo.begin(), luaInfo.end());
+	fileMapInfo->SetLoaded(true);
 }
 
-void CMapGenerator::GenerateSMT(CVirtualArchive* archive)
+void CMapGenerator::GenerateSMT(CVirtualFile* fileSMT)
 {
-	CVirtualFile* fileSMT = archive->AddFile("maps/generated.smt");
-
 	const int tileSize = 32;
 
 	//--- Make TileFileHeader ---
@@ -287,4 +314,6 @@ void CMapGenerator::GenerateSMT(CVirtualArchive* archive)
 		memcpy(&(fileSMT->buffer[writePosition]), tileDataDXT, SMALL_TILE_SIZE);
 		writePosition += SMALL_TILE_SIZE;
 	}
+
+	fileSMT->SetLoaded(true);
 }

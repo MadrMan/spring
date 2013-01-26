@@ -2,7 +2,7 @@
 
 #include "SimpleMapGenerator.h"
 
-CSimpleMapGenerator::CSimpleMapGenerator(const CGameSetup* setup) : CMapGenerator(setup)
+CSimpleMapGenerator::CSimpleMapGenerator(unsigned int mapSeed) : CMapGenerator(mapSeed)
 {
 	GenerateInfo();
 }
@@ -15,6 +15,8 @@ CSimpleMapGenerator::~CSimpleMapGenerator()
 void CSimpleMapGenerator::GenerateInfo()
 {
 	mapSize = int2(5, 5);
+
+	SetMapName("My Generated Map");
 }
 
 void CSimpleMapGenerator::GenerateMap()
@@ -22,7 +24,7 @@ void CSimpleMapGenerator::GenerateMap()
 	startPositions.push_back(int2(20, 20));
 	startPositions.push_back(int2(500, 500));
 
-	mapDescription = "The Split Canyon";
+	mapDescription = "My Map Description";
 
 	int2 gs = GetGridSize();
 	std::vector<float>& map = GetHeightMap();

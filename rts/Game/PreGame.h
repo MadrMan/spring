@@ -13,7 +13,8 @@ class ILoadSaveHandler;
 class GameData;
 class CGameSetup;
 class ClientSetup;
-
+class CGameSetup;
+class CMapGenerator;
 
 namespace netcode {
 	class RawPacket;
@@ -61,6 +62,9 @@ private:
 
 	void GameDataReceived(boost::shared_ptr<const netcode::RawPacket> packet);
 
+	/// generates map and updates setup accordingly
+	void SetGeneratedMap(CGameSetup* setup);
+
 	/**
 	@brief GameData we received from server
 
@@ -70,6 +74,7 @@ private:
 	boost::shared_ptr<ClientSetup> clientSetup;
 
 	std::string modArchive;
+	CMapGenerator* mapGenerator;
 	ILoadSaveHandler* savefile;
 
 	spring_time timer;
