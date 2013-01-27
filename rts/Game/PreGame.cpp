@@ -516,7 +516,7 @@ void CPreGame::SetGeneratedMap(CGameSetup* setup)
 			throw content_error("Existing MapGenerator seed does not match new seed");
 		}
 	} else {
-		mapGenerator = new CSimpleMapGenerator(setup->mapSeed);
+		mapGenerator = new CSimpleMapGenerator(setup);
 		mapGenerator->Generate();
 	}
 

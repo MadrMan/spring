@@ -14,8 +14,9 @@
 #include <boost/lexical_cast.hpp>
 #include <fstream>
 
-CMapGenerator::CMapGenerator(unsigned int mapSeed)
-	: mapSeed(mapSeed), archive(NULL), fileSMF(NULL), fileSMT(NULL), fileMapInfo(NULL), isGenerated(false)
+CMapGenerator::CMapGenerator(const CGameSetup* setup)
+	: mapSeed(setup->mapSeed), setup(setup), archive(NULL), fileSMF(NULL),
+	fileSMT(NULL), fileMapInfo(NULL), isGenerated(false), rng(setup->mapSeed)
 {
 }
 
@@ -28,6 +29,13 @@ CMapGenerator::~CMapGenerator()
 	{
 		archive->clear();
 	}
+}
+
+void CMapGenerator::SetMapSize(const int2& mapSize)
+{
+	this->mapSize = mapSize;
+	gridSize.x = mapSize.x * CSMFReadMap::bigSquareSize + 1;
+	gridSize.y = mapSize.y * CSMFReadMap::bigSquareSize + 1;
 }
 
 void CMapGenerator::Generate()
@@ -46,8 +54,7 @@ void CMapGenerator::Generate()
 	fileSMT = archive->AddFile("maps/generated.smt");
 
 	//Create arrays that can be filled by top class
-	int2 gridSize = GetGridSize();
-	const int dimensions = (gridSize.x + 1) * (gridSize.y + 1);
+	const int dimensions = gridSize.x * gridSize.y;
 	heightMap.resize(dimensions);
 	metalMap.resize(dimensions);
 
@@ -104,9 +111,9 @@ void CMapGenerator::GenerateSMF(CVirtualFile* fileSMF)
 	smfHeader.mapid = 0x524d4746 ^ mapSeed;
 
 	//Set settings
-	smfHeader.mapx = GetGridSize().x;
-	smfHeader.mapy = GetGridSize().y;
-	smfHeader.squareSize = 8;
+	smfHeader.mapx = GetGridSize().x - 1;
+	smfHeader.mapy = GetGridSize().y - 1;
+	smfHeader.squareSize = GRID_SQUARE_SIZE;
 	smfHeader.texelPerSquare = 8;
 	smfHeader.tilesize = 32;
 	smfHeader.minHeight = -100;

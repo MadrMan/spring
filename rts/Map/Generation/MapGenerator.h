@@ -5,6 +5,10 @@
 
 #include "System/type2.h"
 #include "Map/SMF/SMFReadMap.h"
+#include "Game/GameSetup.h"
+
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_real_distribution.hpp>
 
 class CVirtualFile;
 class CVirtualArchive;
@@ -21,10 +25,12 @@ public:
 	unsigned int GetMapSeed() const
 	{ return mapSeed; }
 
-protected:
-	CMapGenerator(unsigned int mapSeed);
+	const static unsigned int GRID_SQUARE_SIZE = 8;
 
-	const unsigned int mapSeed;
+protected:
+	CMapGenerator(const CGameSetup* setup);
+
+	const CGameSetup* setup;
 
 	std::vector<float>& GetHeightMap()
 	{ return heightMap; }
@@ -32,8 +38,25 @@ protected:
 	void SetMapName(const std::string& mapName)
 	{ this->mapName = mapName; }
 
-	virtual int2 GetGridSize() const
-	{ return int2(GetMapSize().x * CSMFReadMap::bigSquareSize, GetMapSize().y * CSMFReadMap::bigSquareSize); }
+	void SetHeight(int x, int y, float v)
+	{ heightMap[y * gridSize.x + x] = v; }
+
+	float GetHeight(int x, int y) const
+	{ return heightMap[y * gridSize.x + x]; }
+
+	void SetMapSize(const int2& mapSize);
+
+	const int2& GetMapSize() const
+	{ return mapSize; }
+
+	const int2& GetGridSize() const
+	{ return gridSize; }
+
+	int GetRndInt(int min, int max)
+	{ return (rng() % (max - min)) + min; }
+
+	float GetRndFloat()
+	{ return fdistribution(rng); }
 
 private:
 	void GenerateSMF(CVirtualFile* fileSMF);
@@ -54,7 +77,6 @@ private:
 	void SetToBuffer(CVirtualFile* file, const void* data, int size, int position);
 
 	virtual void GenerateMap() = 0;
-	virtual const int2& GetMapSize() const = 0;
 	virtual const std::vector<int2>& GetStartPositions() const = 0;
 	virtual const std::string& GetMapDescription() const = 0;
 
@@ -62,6 +84,13 @@ private:
 	std::vector<float> metalMap;
 	std::string mapName;
 	bool isGenerated;
+	const unsigned int mapSeed;
+
+	boost::random::mt19937 rng;
+	boost::random::uniform_real_distribution<float> fdistribution;
+
+	int2 mapSize;
+	int2 gridSize;
 
 	CVirtualArchive* archive;
 	CVirtualFile* fileSMF;

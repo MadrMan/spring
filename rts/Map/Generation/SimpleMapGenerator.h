@@ -8,16 +8,13 @@
 class CSimpleMapGenerator : public CMapGenerator
 {
 public:
-	CSimpleMapGenerator(unsigned int mapSeed);
+	CSimpleMapGenerator(const CGameSetup* setup);
 	virtual ~CSimpleMapGenerator();
 
 private:
 	void GenerateInfo();
-
+	void GenerateStartPositions();
 	virtual void GenerateMap();
-
-	virtual const int2& GetMapSize() const
-	{ return mapSize; }
 
 	virtual const std::vector<int2>& GetStartPositions() const
 	{ return startPositions; }
@@ -26,8 +23,8 @@ private:
 	{ return mapDescription; }
 
 	std::vector<int2> startPositions;
-	int2 mapSize;
 	std::string mapDescription;
+
 };
 
 #endif // _SIMPLE_MAP_GENERATOR_H_
