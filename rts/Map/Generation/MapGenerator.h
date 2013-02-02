@@ -35,14 +35,23 @@ protected:
 	std::vector<float>& GetHeightMap()
 	{ return heightMap; }
 
+	std::vector<unsigned char>& GetMetalMap()
+	{ return metalMap; }
+
 	void SetMapName(const std::string& mapName)
 	{ this->mapName = mapName; }
 
 	void SetHeight(int x, int y, float v)
-	{ heightMap[y * gridSize.x + x] = v; }
+	{ heightMap[GetMapOffset(x, y)] = v; }
 
 	float GetHeight(int x, int y) const
-	{ return heightMap[y * gridSize.x + x]; }
+	{ return heightMap[GetMapOffset(x, y)]; }
+
+	int GetMapOffset(int x, int y) const
+	{ return y * gridSize.x + x; }
+
+	int GetMetalOffset(int x, int y) const
+	{ return y * metalSize.x + x; }
 
 	void SetMapSize(const int2& mapSize);
 
@@ -54,6 +63,9 @@ protected:
 
 	int GetRndInt(int min, int max)
 	{ return (rng() % (max - min)) + min; }
+
+	float GetRndFloat(float min, float max)
+	{ return fdistribution(rng) * (max - min) + min; }
 
 	float GetRndFloat()
 	{ return fdistribution(rng); }
@@ -81,9 +93,8 @@ private:
 	virtual const std::string& GetMapDescription() const = 0;
 
 	std::vector<float> heightMap;
-	std::vector<float> metalMap;
+	std::vector<unsigned char> metalMap;
 	std::string mapName;
-	bool isGenerated;
 	const unsigned int mapSeed;
 
 	boost::random::mt19937 rng;
@@ -91,6 +102,7 @@ private:
 
 	int2 mapSize;
 	int2 gridSize;
+	int2 metalSize;
 
 	CVirtualArchive* archive;
 	CVirtualFile* fileSMF;
