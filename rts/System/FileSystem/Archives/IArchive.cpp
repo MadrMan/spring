@@ -54,11 +54,10 @@ unsigned int IArchive::GetCrc32(unsigned int fid)
 bool IArchive::GetFile(const std::string& name, std::vector<boost::uint8_t>& buffer)
 {
 	const unsigned int fid = FindFile(name);
-	const bool found = (fid < NumFiles());
+	bool found = (fid < NumFiles());
 
 	if (found) {
-		GetFile(fid, buffer);
-		return true;
+		found = GetFile(fid, buffer);
 	}
 
 	return found;

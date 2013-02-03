@@ -47,7 +47,7 @@ CLoadScreen* CLoadScreen::singleton = nullptr;
 
 /******************************************************************************/
 
-CLoadScreen::CLoadScreen(const std::string& _mapName, const std::string& _modName, ILoadSaveHandler* _saveFile) :
+CLoadScreen::CLoadScreen(const std::string& _mapName, const std::string& _modName, ILoadSaveHandler* _saveFile, CMapGenerator* _mapGenerator) :
 	mapName(_mapName),
 	modName(_modName),
 	saveFile(_saveFile),
@@ -57,7 +57,8 @@ CLoadScreen::CLoadScreen(const std::string& _mapName, const std::string& _modNam
 	showMessages(true),
 	startupTexture(0),
 	aspectRatio(1.0f),
-	last_draw(0)
+	last_draw(0),
+	mapGenerator(_mapGenerator)
 {
 }
 
@@ -184,6 +185,8 @@ CLoadScreen::~CLoadScreen()
 #endif
 	}
 
+	delete mapGenerator;
+
 	UnloadStartPicture();
 
 	singleton = nullptr;
@@ -192,11 +195,12 @@ CLoadScreen::~CLoadScreen()
 
 /******************************************************************************/
 
-void CLoadScreen::CreateInstance(const std::string& mapName, const std::string& modName, ILoadSaveHandler* saveFile)
+void CLoadScreen::CreateInstance(const std::string& mapName, const std::string& modName, ILoadSaveHandler* saveFile, CMapGenerator* mapGenerator)
 {
 	assert(singleton == nullptr);
 	singleton = new CLoadScreen(mapName, modName, saveFile);
 
+	singleton = new CLoadScreen(mapName, modName, saveFile, mapGenerator);
 	// Init() already requires GetInstance() to work.
 	singleton->Init();
 

@@ -343,7 +343,10 @@ void CPreGame::UpdateClientNet()
 
 				LOG("[PreGame::%s] user number %i (team %i, allyteam %i)", __FUNCTION__, gu->myPlayerNum, gu->myTeam, gu->myAllyTeam);
 
-				CLoadScreen::CreateInstance(gameSetup->MapFile(), modArchive, savefile);
+				CLoadScreen::CreateInstance(gameSetup->MapFile(), modArchive, savefile, mapGenerator);
+
+				//Set mapgen to null so CLoadScreen handles deletion when it's done loading
+				mapGenerator = NULL;
 
 				pregame = NULL;
 				delete this;

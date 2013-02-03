@@ -15,12 +15,14 @@ namespace boost {
 	class thread;
 }
 
+class CMapGenerator;
+
 class CLoadScreen : public CGameController
 {
 public:
 	void SetLoadMessage(const std::string& text, bool replace_lastline = false);
 
-	CLoadScreen(const std::string& mapName, const std::string& modName, ILoadSaveHandler* saveFile);
+	CLoadScreen(const std::string& mapName, const std::string& modName, ILoadSaveHandler* saveFile, CMapGenerator* mapGenerator);
 	virtual ~CLoadScreen();
 
 	/// Splitt off from the ctor, casue this already uses GetInstance().
@@ -31,7 +33,7 @@ public:
 		assert(singleton);
 		return singleton;
 	}
-	static void CreateInstance(const std::string& mapName, const std::string& modName, ILoadSaveHandler* saveFile);
+	static void CreateInstance(const std::string& mapName, const std::string& modName, ILoadSaveHandler* saveFile, CMapGenerator* mapGenerator);
 	static void DeleteInstance();
 
 	bool Draw();
@@ -70,6 +72,7 @@ private:
 	unsigned int startupTexture;
 	float aspectRatio;
 	spring_time last_draw;
+	CMapGenerator* mapGenerator;
 };
 
 
