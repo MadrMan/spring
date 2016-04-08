@@ -31,6 +31,7 @@ CVirtualArchive* CVirtualArchiveFactory::AddArchive(const std::string& fileName)
 {
 	CVirtualArchive* archive = new CVirtualArchive(fileName);
 	archives.push_back(archive);
+
 	return archive;
 }
 
@@ -52,7 +53,7 @@ IArchive* CVirtualArchiveFactory::DoCreateArchive(const std::string& fileName) c
 
 CVirtualArchiveOpen::CVirtualArchiveOpen(CVirtualArchive* archive, const std::string& fileName) : IArchive(fileName), archive(archive)
 {
-	//Set subclass name index to archive's index (doesn't update while archive is open)
+	// Set subclass name index to archive's index (doesn't update while archive is open)
 	lcNameIndex = archive->GetNameIndex();
 }
 
@@ -62,7 +63,7 @@ CVirtualArchiveOpen::~CVirtualArchiveOpen()
 
 bool CVirtualArchiveOpen::IsOpen()
 {
-	//Virtual archives are stored in memory and as such always open
+	// Virtual archives are stored in memory and are always open
 	return true;
 }
 
@@ -91,6 +92,7 @@ CVirtualArchive::~CVirtualArchive()
 	{
 		delete *it;
 	}
+
 	files.clear();
 }
 
@@ -174,24 +176,23 @@ void CVirtualArchive::WriteToFile()
 
 void CVirtualArchive::clear()
 {
-	//clear the content of the files and unload them (deleting the actual files breaks stuff)
+	// Clear the content of the files and unload them (deleting the actual files breaks stuff)
 	for(std::vector<CVirtualFile*>::iterator it = files.begin(); it != files.end(); ++it)
 	{
 		CVirtualFile* file = *it;
 		file->SetLoaded(false);
 		
-		//a simple .clear() doesn't suffice as it doesn't always reset capacity
-		file->buffer.swap(std::vector<boost::uint8_t>());
+		// A simple .clear() doesn't suffice as it doesn't always reset capacity
+		file->buffer.clear();
+		file->buffer.shrink_to_fit();
 	}
 }
 
 CVirtualFile::CVirtualFile(int fid, const std::string& name) 
 	: name(name), fid(fid), loaded(false)
 {
-
 }
 
 CVirtualFile::~CVirtualFile()
 {
-
 }
