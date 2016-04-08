@@ -5,7 +5,8 @@
 #include "System/FastMath.h"
 #include "Map/SMF/SMFFormat.h"
 
-CSimpleMapGenerator::CSimpleMapGenerator(const CGameSetup* setup) : CMapGenerator(setup)
+CSimpleMapGenerator::CSimpleMapGenerator(const CGameSetup* setup)
+	: CMapGenerator(setup)
 {
 	GenerateInfo();
 }
@@ -234,17 +235,18 @@ void CSimpleMapGenerator::GenerateStartPositions()
 	// 4. Back to step 2
 	const int2& gs = GetGridSize();
 
-	const int allies = setup->allyStartingData.size();
-	const int teams = setup->teamStartingData.size();
+	const auto& teamData = setup->GetTeamStartingDataCont();
+	const size_t allies = setup->GetAllyStartingDataCont().size();
+	const size_t teams = teamData.size();
 	const int moveLimit = (gs.x + gs.y) / (6 + allies * 2);
 	const int borderDistance = 16;
 
 	const float startAngle = GetRndFloat() * fastmath::PI2;
 	const float angleIncrement = fastmath::PI2 / allies;
 
-	for(int x = 0; x < teams; x++)
+	for(size_t x = 0; x < teams; x++)
 	{
-		const TeamBase& team = setup->teamStartingData[x];
+		const auto& team = teamData[x];
 		float allyAngle = startAngle + angleIncrement * team.teamAllyteam;
 
 		float px = cos(allyAngle);

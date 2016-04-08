@@ -198,9 +198,8 @@ CLoadScreen::~CLoadScreen()
 void CLoadScreen::CreateInstance(const std::string& mapName, const std::string& modName, ILoadSaveHandler* saveFile, CMapGenerator* mapGenerator)
 {
 	assert(singleton == nullptr);
-	singleton = new CLoadScreen(mapName, modName, saveFile);
-
 	singleton = new CLoadScreen(mapName, modName, saveFile, mapGenerator);
+
 	// Init() already requires GetInstance() to work.
 	singleton->Init();
 

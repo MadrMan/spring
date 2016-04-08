@@ -15,8 +15,8 @@
 #include <fstream>
 
 CMapGenerator::CMapGenerator(const CGameSetup* setup)
-	: mapSeed(setup->mapSeed), setup(setup), archive(NULL), fileSMF(NULL),
-	fileSMT(NULL), fileMapInfo(NULL), rng(setup->mapSeed)
+	: mapSeed(setup->mapSeed), setup(setup), archive(nullptr), fileSMF(nullptr),
+	fileSMT(nullptr), fileMapInfo(nullptr), rng(setup->mapSeed)
 {
 }
 
@@ -225,7 +225,7 @@ void CMapGenerator::GenerateMapInfo(CVirtualFile* fileMapInfo)
 {
 	//Open template mapinfo.lua
 	const static std::string luaTemplate = "mapgenerator/mapinfo_template.lua";
-	CFileHandler fh(luaTemplate, SPRING_VFS_PWD_ALL);
+	CFileHandler fh(luaTemplate);
 	if(!fh.FileExists())
 	{
 		throw content_error("Error generating map: " + luaTemplate + " not found");

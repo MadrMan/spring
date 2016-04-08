@@ -210,22 +210,18 @@ void CPreGame::StartServer(const std::string& setupscript)
 	startGameSetup->Init(setupscript);
 	startGameData->SetRandomSeed(static_cast<unsigned>(gu->RandInt()));
 
-	if (setup->mapSeed != 0) {
-		SetGeneratedMap(setup);
-	}
-
-	if (startGameSetup->mapName.empty()) {
-		throw content_error("No map selected in startscript");
-	}
-
-	if (startGameSetup->mapSeed != 0) {
-		CSimpleMapGenerator gen(startGameSetup.get());
-		gen.Generate();
+	// If map generation is specified in the startup script, now is a good time to start making it
+	if (startGameSetup->mapSeed) {
+		SetGeneratedMap(startGameSetup.get());
 	}
 
 	// We must map the map into VFS this early, because server needs the start positions.
 	// Take care that MapInfo isn't loaded here, as map options aren't available to it yet.
 	AddGameSetupArchivesToVFS(startGameSetup.get(), true);
+
+	if (startGameSetup->mapName.empty()) {
+		throw content_error("No map selected in startscript");
+	}
 
 	// Loading the start positions executes the map's Lua.
 	// This means start positions can NOT be influenced by map options.
@@ -453,10 +449,7 @@ void CPreGame::GameDataReceived(boost::shared_ptr<const netcode::RawPacket> pack
 
 	if (CGameSetup::LoadReceivedScript(gameData->GetSetupText(), clientSetup->isHost)) {
 		assert(gameSetup != NULL);
-		if(gameSetup->mapSeed != 0)
-		{
-			SetGeneratedMap(gameSetup);
-		}
+
 		gu->LoadFromSetup(gameSetup);
 		gs->LoadFromSetup(gameSetup);
 		// do we really need to do this so early?
@@ -477,6 +470,11 @@ void CPreGame::GameDataReceived(boost::shared_ptr<const netcode::RawPacket> pack
 		if (!teamHandler->IsValidAllyTeam(teamHandler->AllyTeam(player->team))) { // TODO: seems not to make sense really
 			throw content_error("Invalid ally team in game data");
 		}
+	}
+
+	// If map generation is specified in the startup script, now is a good time to start making it
+	if (gameSetup->mapSeed) {
+		SetGeneratedMap(gameSetup);
 	}
 
 	// Load archives into VFS
@@ -512,6 +510,9 @@ void CPreGame::GameDataReceived(boost::shared_ptr<const netcode::RawPacket> pack
 
 void CPreGame::SetGeneratedMap(CGameSetup* setup)
 {
+	// Manually load the maphelper basecontent file, as the map won't be able to add it due to not existing yet
+	vfsHandler->AddArchiveWithDeps("springcontent.sdz", false);
+
 	if(mapGenerator)
 	{
 		if(setup->mapSeed != mapGenerator->GetMapSeed())
