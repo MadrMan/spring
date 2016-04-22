@@ -23,7 +23,7 @@ local mapinfo = {
 	gravity         = 130,
 	tidalStrength   = 0,
 	maxMetal        = 1.0,
-	extractorRadius = 500.0,
+	extractorRadius = 70.0,
 	voidWater       = false,
 	autoShowMetal   = true,
 

@@ -1,6 +1,5 @@
 set(FILES
 	unittextures/tatex/PALETTE.PAL
-	mapgenerator/mapinfo_template.lua
 	EngineOptions.lua
 	shaders/GLSL/bumpWaterCoastBlurFS.glsl
 	shaders/GLSL/infoHeight.lua

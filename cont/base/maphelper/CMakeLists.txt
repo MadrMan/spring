@@ -8,6 +8,7 @@ set(FILES
 	maphelper/parse_tdf.lua
 	maphelper/setupopts.lua
 	maphelper/mapinfo.lua
+	mapgenerator/mapinfo_template.lua
 )
 
 CreateBaseContentArchive("base" "maphelper.sdz" "${FILES}")

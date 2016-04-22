@@ -22,7 +22,7 @@ CMapGenerator::CMapGenerator(const CGameSetup* setup)
 
 CMapGenerator::~CMapGenerator()
 {
-	archive->missingFileHandler = 0;
+	archive->missingFileHandler = nullptr;
 
 	//At this point we should assume the map won't be touched again to save memory
 	if(archive)
@@ -43,12 +43,12 @@ void CMapGenerator::SetMapSize(const int2& mapSize)
 void CMapGenerator::Generate()
 {
 	//Create archive for map
-	const std::string mapArchiveName = std::string("GenMap") + boost::lexical_cast<std::string>(mapSeed);
+	const std::string mapArchiveName = std::string("GenMap") + std::to_string(mapSeed);
 	const std::string mapArchivePath = mapArchiveName + "." + virtualArchiveFactory->GetDefaultExtension();
 	archive = virtualArchiveFactory->AddArchive(mapArchiveName);
 
 	//Set handler to be called when a non-loaded file is requested
-	archive->missingFileHandler = std::bind1st(std::mem_fun(&CMapGenerator::MissingFileHandler), this);
+	archive->missingFileHandler = std::bind(&CMapGenerator::MissingFileHandler, this, std::placeholders::_1);
 
 	//Add initital files for scanning
 	fileSMF = archive->AddFile("maps/generated.smf");
@@ -127,17 +127,17 @@ void CMapGenerator::GenerateSMF(CVirtualFile* fileSMF)
 	smfHeader.numExtraHeaders =  1;
 
 	//Make buffers for each map
-	int heightmapDimensions = heightMap.size();
-	int typemapDimensions = (smfHeader.mapx / 2) * (smfHeader.mapy / 2);
-	int tilemapDimensions =  (smfHeader.mapx * smfHeader.mapy) / 16;
-	int vegmapDimensions = (smfHeader.mapx / 4) * (smfHeader.mapy / 4);
+	const int heightmapDimensions = heightMap.size();
+	const int typemapDimensions = (smfHeader.mapx / 2) * (smfHeader.mapy / 2);
+	const int tilemapDimensions =  (smfHeader.mapx * smfHeader.mapy) / 16;
+	const int vegmapDimensions = (smfHeader.mapx / 4) * (smfHeader.mapy / 4);
 
-	int heightmapSize = heightmapDimensions * sizeof(short);
-	int typemapSize = typemapDimensions * sizeof(unsigned char);
-	int tilemapSize = tilemapDimensions * sizeof(int);
-	int tilemapTotalSize = sizeof(MapTileHeader) + sizeof(numSmallTiles) + sizeof(smtFileName) + tilemapSize;
-	int vegmapSize = vegmapDimensions * sizeof(unsigned char);
-	int minimapSize = MINIMAP_SIZE;
+	const int heightmapSize = heightmapDimensions * sizeof(short);
+	const int typemapSize = typemapDimensions * sizeof(unsigned char);
+	const int tilemapSize = tilemapDimensions * sizeof(int);
+	const int tilemapTotalSize = sizeof(MapTileHeader) + sizeof(numSmallTiles) + sizeof(smtFileName) + tilemapSize;
+	const int vegmapSize = vegmapDimensions * sizeof(unsigned char);
+	const int minimapSize = MINIMAP_SIZE;
 
 	short* heightmapPtr = new short[heightmapDimensions];
 	unsigned char* typemapPtr = new unsigned char[typemapDimensions];
@@ -251,7 +251,7 @@ void CMapGenerator::GenerateMapInfo(CVirtualFile* fileMapInfo)
 
 	//Replace tags in mapinfo.lua
 	boost::replace_first(luaInfo, "${NAME}", mapName);
-	boost::replace_first(luaInfo, "${DESCRIPTION}", GetMapDescription());
+	boost::replace_first(luaInfo, "${DESCRIPTION}", mapDescription);
 	boost::replace_first(luaInfo, "${START_POSITIONS}", startPosString);
 
 	//Copy to filebuffer

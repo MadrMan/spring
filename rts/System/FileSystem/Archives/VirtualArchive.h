@@ -7,7 +7,7 @@
 #include "IArchive.h"
 #include <vector>
 #include <string>
-#include <boost/function.hpp>
+#include <functional>
 
 class CVirtualArchive;
 
@@ -107,7 +107,7 @@ public:
 
 	void clear();
 
-	boost::function<bool(CVirtualFile*)> missingFileHandler;
+	std::function<bool(CVirtualFile*)> missingFileHandler;
 
 private:
 	friend class CVirtualArchiveOpen;

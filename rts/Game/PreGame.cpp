@@ -510,9 +510,6 @@ void CPreGame::GameDataReceived(boost::shared_ptr<const netcode::RawPacket> pack
 
 void CPreGame::SetGeneratedMap(CGameSetup* setup)
 {
-	// Manually load the maphelper basecontent file, as the map won't be able to add it due to not existing yet
-	vfsHandler->AddArchiveWithDeps("springcontent.sdz", false);
-
 	if(mapGenerator)
 	{
 		if(setup->mapSeed != mapGenerator->GetMapSeed())
@@ -520,6 +517,9 @@ void CPreGame::SetGeneratedMap(CGameSetup* setup)
 			throw content_error("Existing MapGenerator seed does not match new seed");
 		}
 	} else {
+		// Manually load the maphelper basecontent file, as we need some files used by the mapgen prior to map loading
+		vfsHandler->AddArchiveWithDeps("maphelper.sdz", false);
+
 		mapGenerator = new CSimpleMapGenerator(setup);
 		mapGenerator->Generate();
 	}
