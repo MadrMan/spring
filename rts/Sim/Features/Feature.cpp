@@ -496,6 +496,14 @@ void CFeature::ForcedSpin(const float3& newDir)
 
 void CFeature::UpdateTransformAndPhysState()
 {
+	ASSERT_SYNCED(frontdir);
+	ASSERT_SYNCED(rightdir);
+	ASSERT_SYNCED(updir);
+	ASSERT_SYNCED(relMidPos);
+	ASSERT_SYNCED(relAimPos);
+	ASSERT_SYNCED(midPos);
+	ASSERT_SYNCED(aimPos);
+
 	UpdateDirVectors(!def->upright);
 	UpdateTransform(pos, true);
 
@@ -597,6 +605,8 @@ bool CFeature::UpdatePosition()
 
 bool CFeature::Update()
 {
+	ASSERT_SYNCED(id);
+
 	bool continueUpdating = UpdatePosition();
 
 	continueUpdating |= (smokeTime != 0);

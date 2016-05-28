@@ -224,6 +224,9 @@ bool CFeatureHandler::UpdateFeature(CFeature* feature)
 {
 	assert(feature->inUpdateQue);
 
+	ASSERT_SYNCED(feature->id);
+	ASSERT_SYNCED(feature->pos);
+
 	if (feature->deleteMe) {
 		eventHandler.RenderFeatureDestroyed(feature);
 		eventHandler.FeatureDestroyed(feature);
