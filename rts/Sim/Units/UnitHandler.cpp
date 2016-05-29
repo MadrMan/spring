@@ -283,7 +283,9 @@ void CUnitHandler::Update()
 			UNIT_SANITY_CHECK(unit);
 			unit->Update();
 			UNIT_SANITY_CHECK(unit);
+
 			assert(activeUnits[activeUpdateUnit] == unit);
+			ASSERT_SYNCED(unit->pos);
 		}
 	}
 

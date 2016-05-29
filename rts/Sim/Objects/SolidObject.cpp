@@ -401,6 +401,9 @@ float3 CSolidObject::GetWantedUpDir(bool useGroundNormal) const
 	const float3 gn = CGround::GetSmoothNormal(pos.x, pos.z) * (    useGroundNormal);
 	const float3 wn =                              UpVector  * (1 - useGroundNormal);
 
+	ASSERT_SYNCED(gn);
+	ASSERT_SYNCED(wn);
+
 	if (moveDef == nullptr) {
 		// aircraft cannot use updir reliably or their
 		// coordinate-system would degenerate too much
@@ -420,6 +423,8 @@ float3 CSolidObject::GetWantedUpDir(bool useGroundNormal) const
 			case MoveDef::Ship:  { return ((UpVector * IsInWater()) + (gn + wn) * (1 - IsInWater())); } break;
 		}
 	}
+
+	ASSERT_SYNCED(updir);
 
 	// prefer to keep local up-vector as long as possible
 	return updir;
@@ -449,6 +454,9 @@ void CSolidObject::UpdateDirVectors(bool useGroundNormal)
 	frontdir = GetVectorFromHeading(heading);
 	rightdir = (frontdir.cross(updir)).Normalize();
 	frontdir = updir.cross(rightdir);
+
+	ASSERT_SYNCED(heading);
+	ASSERT_SYNCED(frontdir);
 }
 
 
