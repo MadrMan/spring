@@ -207,6 +207,7 @@ void CUnitHandler::Update()
 			CUnit* unit = activeUnits[activeUpdateUnit];
 			AMoveType* moveType = unit->moveType;
 
+			ASSERT_SYNCED(unit->pos);
 			UNIT_SANITY_CHECK(unit);
 
 			if (moveType->Update()) {
@@ -218,7 +219,9 @@ void CUnitHandler::Update()
 				unit->KillUnit(nullptr, false, true, false);
 			}
 
+			ASSERT_SYNCED(unit->pos);
 			UNIT_SANITY_CHECK(unit);
+
 			assert(activeUnits[activeUpdateUnit] == unit);
 		}
 	}
@@ -265,10 +268,14 @@ void CUnitHandler::Update()
 		for (; activeSlowUpdateUnit < activeUnits.size() && n != 0; ++activeSlowUpdateUnit) {
 			CUnit* unit = activeUnits[activeSlowUpdateUnit];
 
+			ASSERT_SYNCED(unit->pos);
 			UNIT_SANITY_CHECK(unit);
+
 			unit->SlowUpdate();
 			unit->SlowUpdateWeapons();
 			unit->localModel.UpdateBoundingVolume();
+
+			ASSERT_SYNCED(unit->pos);
 			UNIT_SANITY_CHECK(unit);
 
 			n--;
@@ -280,12 +287,15 @@ void CUnitHandler::Update()
 
 		for (activeUpdateUnit = 0; activeUpdateUnit < activeUnits.size();++activeUpdateUnit) {
 			CUnit* unit = activeUnits[activeUpdateUnit];
+
+			ASSERT_SYNCED(unit->pos);
 			UNIT_SANITY_CHECK(unit);
 			unit->Update();
+
+			ASSERT_SYNCED(unit->pos);
 			UNIT_SANITY_CHECK(unit);
 
 			assert(activeUnits[activeUpdateUnit] == unit);
-			ASSERT_SYNCED(unit->pos);
 		}
 	}
 
